@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비브라스 챌린지: 가짜 동전 찾기 게임</title>
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --success: #10B981;
+            --error: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .challenge-card {
+            background-color: var(--card-bg);
+            max-width: 600px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* 대시보드 (점수판) 스타일 */
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #F8FAFC;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .stats-group {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .score-val { color: var(--primary-color); font-size: 1.3rem; }
+        .attempt-val { color: var(--text-muted); }
+
+        .btn-reset {
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        .btn-reset:hover { background-color: #DC2626; }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .problem-statement {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            padding: 25px 20px;
+            background-color: #F9FAFB;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            word-break: keep-all;
+        }
+
+        .coin-highlight {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #EEF2FF;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        input[type="number"] {
+            width: 140px;
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #D1D5DB;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus { border-color: var(--primary-color); }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+            max-width: 180px;
+        }
+        .btn-submit:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        .btn-new {
+            background-color: #10B981;
+            color: white;
+        }
+        .btn-new:hover { background-color: #059669; transform: translateY(-2px); }
+
+        .btn-answer {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid #D1D5DB;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-answer:hover { background-color: #F3F4F6; color: var(--text-main); }
+
+        #feedback-message {
+            margin: 15px 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-height: 24px;
+        }
+        .success-text { color: var(--success); }
+        .error-text { color: var(--error); }
+
+        #answer-section {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #D1D5DB;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #4B5563;
+            background: #F8FAFC;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #answer-section strong { color: var(--primary-color); }
+
+        @media (max-width: 480px) {
+            .stats-group { flex-direction: column; gap: 5px; align-items: flex-start; }
+            .dashboard { align-items: flex-start; }
+            .btn-reset { margin-top: 10px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="challenge-card">
+        <!-- 대시보드 (점수 및 시도횟수) -->
+        <div class="dashboard">
+            <div class="stats-group">
+                <div>점수: <span id="score" class="score-val">0</span>점</div>
+                <div>시도 횟수: <span id="attempts" class="attempt-val">0</span>회</div>
+            </div>
+            <button class="btn-reset" onclick="resetGame()">게임 다시하기</button>
+        </div>
+
+        <h1>비브라스 챌린지</h1>
+        
+        <div class="problem-statement">
+            동일하게 생긴 동전 <span id="coin-count" class="coin-highlight">9</span>개 중 가벼운 불량 동전 하나를 찾으려고 합니다.<br><br>
+            우리에게는 양팔 저울 하나밖에 없습니다.<br>
+            <strong>불량 동전을 찾는 최소 가짓수(횟수)는 몇 번일까요?</strong>
+        </div>
+
+        <div class="controls">
+            <input type="number" id="student-answer" placeholder="숫자 입력" min="1">
+            <button class="btn btn-submit" onclick="submitAnswer()">정답 제출</button>
+            <button class="btn btn-new" onclick="generateNewProblem()">새로 도전</button>
+        </div>
+
+        <div id="feedback-message"></div>
+
+        <button class="btn btn-answer" onclick="toggleAnswer()">정답 및 해설 보기</button>
+
+        <div id="answer-section">
+            <strong>현재 문제 정답: <span id="ans-n">2</span>번</strong><br><br>
+            [해설의 원리]<br>
+            동전의 개수가 <strong>3의 n제곱(3ⁿ)</strong>개일 때, 최소 저울질 횟수는 <strong>n번</strong>입니다.<br><br>
+            - 현재 동전은 <span id="ans-coins">9</span>개, 즉 3의 <span id="ans-power">2</span>제곱 개입니다.<br>
+            - 동전을 항상 3개의 그룹으로 똑같이 나눕니다.<br>
+            - 두 그룹을 양팔 저울에 올리면, 무조건 가벼운 동전이 포함된 3분의 1 그룹을 찾아낼 수 있습니다.<br>
+            - 이 과정을 반복할 때마다 용의선상에 있는 동전의 수는 3분의 1로 줄어듭니다.
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let attempts = 0;
+        let currentPower = 0; // n 값 (정답)
+        let currentCoins = 0; // 3^n 값
+
+        // 게임 초기 설정 및 새로운 문제 생성
+        function generateNewProblem(isRetry = false) {
+            // n은 1 ~ 10 사이의 랜덤 정수
+            currentPower = Math.floor(Math.random() * 10) + 1;
+            currentCoins = Math.pow(3, currentPower);
+
+            // UI 업데이트 (천단위 콤마 적용)
+            document.getElementById('coin-count').textContent = currentCoins.toLocaleString();
+            
+            // 해설지 업데이트
+            document.getElementById('ans-n').textContent = currentPower;
+            document.getElementById('ans-coins').textContent = currentCoins.toLocaleString();
+            document.getElementById('ans-power').textContent = currentPower;
+
+            // 입력창 초기화 및 해설 숨기기
+            document.getElementById('student-answer').value = '';
+            document.getElementById('answer-section').style.display = 'none';
+            document.querySelector('.btn-answer').textContent = '정답 및 해설 보기';
+            
+            if (isRetry) {
+                showFeedback("새로운 문제로 셔플되었습니다!", "");
+            }
+        }
+
+        // 정답 제출 처리 로직
+        function submitAnswer() {
+            const answerInput = document.getElementById('student-answer').value;
+            if (answerInput.trim() === "") {
+                showFeedback("숫자를 입력해주세요!", "error-text");
+                return;
+            }
+
+            const userAnswer = parseInt(answerInput);
+            attempts++; // 시도 횟수 누적
+
+            if (userAnswer === currentPower) {
+                // 정답일 경우
+                score++;
+                showFeedback(`🎉 정답입니다! (+1점) 자동으로 새로운 문제가 주어집니다.`, "success-text");
+                updateDashboard();
+                
+                // 1.5초 후 자동으로 다음 문제로 넘어감
+                setTimeout(() => {
+                    generateNewProblem();
+                    document.getElementById('feedback-message').textContent = "";
+                }, 1500);
+
+            } else {
+                // 오답일 경우
+                score--;
+                showFeedback(`❌ 틀렸습니다! (-1점) 보드가 셔플되었습니다.`, "error-text");
+                updateDashboard();
+                
+                // 오답일 경우 즉시 보드 셔플 (문제 조건 1번 반영)
+                generateNewProblem();
+            }
+        }
+
+        // 피드백 메시지 출력
+        function showFeedback(msg, className) {
+            const feedbackEl = document.getElementById('feedback-message');
+            feedbackEl.textContent = msg;
+            feedbackEl.className = className;
+        }
+
+        // 점수 및 시도횟수 UI 렌더링
+        function updateDashboard() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('attempts').textContent = attempts;
+        }
+
+        // 게임 전체 초기화 로직
+        function resetGame() {
+            if (confirm("정말 점수와 시도 횟수를 초기화하시겠습니까?")) {
+                score = 0;
+                attempts = 0;
+                updateDashboard();
+                generateNewProblem();
+                showFeedback("게임이 초기화되었습니다. 새로 시작해보세요!", "success-text");
+            }
+        }
+
+        // 해설지 토글 로직
+        function toggleAnswer() {
+            const answerSection = document.getElementById('answer-section');
+            const btnAnswer = document.querySelector('.btn-answer');
+            
+            if (answerSection.style.display === 'none' || answerSection.style.display === '') {
+                answerSection.style.display = 'block';
+                btnAnswer.textContent = '해설 숨기기';
+            } else {
+                answerSection.style.display = 'none';
+                btnAnswer.textContent = '정답 및 해설 보기';
+            }
+        }
+
+        // 페이지 로드 시 첫 문제 생성
+        window.onload = () => {
+            generateNewProblem();
+        };
+    </script>
+</body>
+</html>

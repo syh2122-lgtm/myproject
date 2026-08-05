@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비브라스 챌린지: 가짜 동전 찾기</title>
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .challenge-card {
+            background-color: var(--card-bg);
+            max-width: 600px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .problem-statement {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #F9FAFB;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            word-break: keep-all;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 150px;
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #D1D5DB;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-answer {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid #D1D5DB;
+            margin-top: 10px;
+        }
+
+        .btn-answer:hover {
+            background-color: #F3F4F6;
+            color: var(--text-main);
+        }
+
+        #feedback-message {
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-height: 24px;
+        }
+
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+
+        #answer-section {
+            display: none;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #D1D5DB;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #4B5563;
+        }
+
+        #answer-section strong {
+            color: var(--primary-color);
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 480px) {
+            .challenge-card { padding: 30px 20px; }
+            h1 { font-size: 1.3rem; }
+            .problem-statement { font-size: 1rem; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="challenge-card">
+        <h1>비브라스 챌린지</h1>
+        
+        <div class="problem-statement">
+            동일하게 생긴 동전 9개 중 가벼운 불량 동전 하나를 찾으려고 합니다.<br><br>
+            우리에게는 양팔 저울 하나밖에 없습니다.<br>
+            <strong>불량 동전을 찾는 최소 가짓수(횟수)는 몇 번일까요?</strong>
+        </div>
+
+        <div class="input-group">
+            <input type="number" id="student-answer" placeholder="숫자 입력 (예: 3)" min="1">
+            <button class="btn btn-submit" onclick="checkAnswer()">도전하기</button>
+        </div>
+
+        <div id="feedback-message"></div>
+
+        <button class="btn btn-answer" onclick="toggleAnswer()">정답 및 해설 보기</button>
+
+        <div id="answer-section">
+            <strong>정답: 2번</strong><br><br>
+            [해설]<br>
+            1. 동전 9개를 3개씩 3그룹(A, B, C)으로 나눕니다.<br>
+            2. <strong>첫 번째 저울질:</strong> A와 B를 저울에 올립니다.<br>
+               - 무게가 같으면 불량 동전은 C그룹에 있습니다.<br>
+               - 기울어지면 가벼운 쪽에 불량 동전이 있습니다.<br>
+               (이제 용의선상에 있는 동전은 3개로 줄었습니다.)<br>
+            3. <strong>두 번째 저울질:</strong> 남은 3개의 동전 중 2개를 골라 저울 양쪽에 올립니다.<br>
+               - 무게가 같으면 저울에 올리지 않은 나머지 1개가 불량 동전입니다.<br>
+               - 기울어지면 가벼운 쪽이 불량 동전입니다.
+        </div>
+    </div>
+
+    <script>
+        function checkAnswer() {
+            const answerInput = document.getElementById('student-answer').value;
+            const feedbackElement = document.getElementById('feedback-message');
+            
+            if (answerInput.trim() === "") {
+                feedbackElement.textContent = "숫자를 입력해주세요!";
+                feedbackElement.className = "error";
+                return;
+            }
+
+            if (parseInt(answerInput) === 2) {
+                feedbackElement.innerHTML = "🎉 정답입니다! 훌륭한 논리력이에요!";
+                feedbackElement.className = "success";
+            } else {
+                feedbackElement.innerHTML = "아쉽네요. 동전을 3개씩 묶어보면 어떨까요? 다시 도전해 보세요!";
+                feedbackElement.className = "error";
+            }
+        }
+
+        function toggleAnswer() {
+            const answerSection = document.getElementById('answer-section');
+            const btnAnswer = document.querySelector('.btn-answer');
+            
+            if (answerSection.style.display === 'none' || answerSection.style.display === '') {
+                answerSection.style.display = 'block';
+                btnAnswer.textContent = '해설 숨기기';
+            } else {
+                answerSection.style.display = 'none';
+                btnAnswer.textContent = '정답 및 해설 보기';
+            }
+        }
+    </script>
+</body>
+</html>
